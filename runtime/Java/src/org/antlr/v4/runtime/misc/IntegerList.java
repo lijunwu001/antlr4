@@ -5,6 +5,7 @@
  */
 package org.antlr.v4.runtime.misc;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  *
  * @author Sam Harwell
  */
-public class IntegerList {
+public class IntegerList implements Serializable {
 
 	private static int[] EMPTY_DATA = new int[0];
 

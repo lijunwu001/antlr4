@@ -6,13 +6,15 @@
 
 package org.antlr.v4.runtime.tree;
 
+import java.io.Serializable;
+
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 
 /** The basic notion of a tree has a parent, a payload, and a list of children.
  *  It is the most abstract interface for all the trees used by ANTLR.
  */
-public interface Tree {
+public interface Tree extends Serializable {
 	/** The parent of this node. If the return value is null, then this
 	 *  node is the root of the tree.
 	 */

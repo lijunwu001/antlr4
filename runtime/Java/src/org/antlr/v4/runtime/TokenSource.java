@@ -5,6 +5,8 @@
  */
 package org.antlr.v4.runtime;
 
+import java.io.Serializable;
+
 /**
  * A source of tokens must provide a sequence of tokens via {@link #nextToken()}
  * and also must reveal it's source of characters; {@link CommonToken}'s text is
@@ -20,7 +22,7 @@ package org.antlr.v4.runtime;
  * token. Keep lexing until you get a valid one. Just report errors and keep
  * going, looking for a valid token.</p>
  */
-public interface TokenSource {
+public interface TokenSource extends Serializable {
 	/**
 	 * Return a {@link Token} object from your input stream (usually a
 	 * {@link CharStream}). Do not fail/return upon lexing error; keep chewing
