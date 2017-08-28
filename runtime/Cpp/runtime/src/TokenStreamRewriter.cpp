@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -14,19 +14,23 @@ using namespace antlr4;
 
 using antlr4::misc::Interval;
 
-TokenStreamRewriter::RewriteOperation::RewriteOperation(TokenStreamRewriter *outerInstance, size_t index)
-  : outerInstance(outerInstance) {
+TokenStreamRewriter::RewriteOperation::RewriteOperation(TokenStreamRewriter *outerInstance_, size_t index_)
+  : outerInstance(outerInstance_) {
 
   InitializeInstanceFields();
-  this->index = index;
+  this->index = index_;
 }
 
-TokenStreamRewriter::RewriteOperation::RewriteOperation(TokenStreamRewriter *outerInstance, size_t index,
-  const std::string& text) : outerInstance(outerInstance) {
+TokenStreamRewriter::RewriteOperation::RewriteOperation(TokenStreamRewriter *outerInstance_, size_t index_,
+  const std::string& text_) : outerInstance(outerInstance_) {
 
   InitializeInstanceFields();
-  this->index = index;
-  this->text = text;
+  this->index = index_;
+  this->text = text_;
+}
+
+TokenStreamRewriter::RewriteOperation::~RewriteOperation()
+{
 }
 
 size_t TokenStreamRewriter::RewriteOperation::execute(std::string * /*buf*/) {
@@ -45,8 +49,8 @@ void TokenStreamRewriter::RewriteOperation::InitializeInstanceFields() {
   index = 0;
 }
 
-TokenStreamRewriter::InsertBeforeOp::InsertBeforeOp(TokenStreamRewriter *outerInstance, size_t index, const std::string& text)
-: RewriteOperation(outerInstance, index, text), outerInstance(outerInstance) {
+TokenStreamRewriter::InsertBeforeOp::InsertBeforeOp(TokenStreamRewriter *outerInstance_, size_t index_, const std::string& text_)
+: RewriteOperation(outerInstance_, index_, text_), outerInstance(outerInstance_) {
 }
 
 size_t TokenStreamRewriter::InsertBeforeOp::execute(std::string *buf) {
@@ -57,8 +61,8 @@ size_t TokenStreamRewriter::InsertBeforeOp::execute(std::string *buf) {
   return index + 1;
 }
 
-TokenStreamRewriter::ReplaceOp::ReplaceOp(TokenStreamRewriter *outerInstance, size_t from, size_t to, const std::string& text)
-: RewriteOperation(outerInstance, from, text), outerInstance(outerInstance) {
+TokenStreamRewriter::ReplaceOp::ReplaceOp(TokenStreamRewriter *outerInstance_, size_t from, size_t to, const std::string& text)
+: RewriteOperation(outerInstance_, from, text), outerInstance(outerInstance_) {
 
   InitializeInstanceFields();
   lastIndex = to;
@@ -84,7 +88,7 @@ void TokenStreamRewriter::ReplaceOp::InitializeInstanceFields() {
 
 const std::string TokenStreamRewriter::DEFAULT_PROGRAM_NAME = "default";
 
-TokenStreamRewriter::TokenStreamRewriter(TokenStream *tokens) : tokens(tokens) {
+TokenStreamRewriter::TokenStreamRewriter(TokenStream *tokens_) : tokens(tokens_) {
   _programs[DEFAULT_PROGRAM_NAME].reserve(PROGRAM_INIT_SIZE);
 }
 
@@ -203,11 +207,13 @@ void TokenStreamRewriter::Delete(Token *from, Token *to) {
 }
 
 void TokenStreamRewriter::Delete(const std::string &programName, size_t from, size_t to) {
-  replace(programName, from, to, nullptr);
+  std::string nullString;
+  replace(programName, from, to, nullString);
 }
 
 void TokenStreamRewriter::Delete(const std::string &programName, Token *from, Token *to) {
-  replace(programName, from, to, nullptr);
+  std::string nullString;
+  replace(programName, from, to, nullString);
 }
 
 size_t TokenStreamRewriter::getLastRewriteTokenIndex() {
@@ -251,7 +257,7 @@ std::string TokenStreamRewriter::getText(const Interval &interval) {
 }
 
 std::string TokenStreamRewriter::getText(const std::string &programName, const Interval &interval) {
-  std::vector<TokenStreamRewriter::RewriteOperation*> rewrites = _programs[programName];
+  std::vector<TokenStreamRewriter::RewriteOperation*> &rewrites = _programs[programName];
   size_t start = interval.a;
   size_t stop = interval.b;
 
@@ -305,7 +311,8 @@ std::string TokenStreamRewriter::getText(const std::string &programName, const I
 }
 
 std::unordered_map<size_t, TokenStreamRewriter::RewriteOperation*> TokenStreamRewriter::reduceToSingleOperationPerIndex(
-  std::vector<TokenStreamRewriter::RewriteOperation*> rewrites) {
+  std::vector<TokenStreamRewriter::RewriteOperation*> &rewrites) {
+
 
   // WALK REPLACES
   for (size_t i = 0; i < rewrites.size(); ++i) {
@@ -410,10 +417,10 @@ std::string TokenStreamRewriter::catOpText(std::string *a, std::string *b) {
   std::string x = "";
   std::string y = "";
   if (a != nullptr) {
-    x = std::string(*a);
+    x = *a;
   }
   if (b != nullptr) {
-    y = std::string(*b);
+    y = *b;
   }
   return x + y;
 }

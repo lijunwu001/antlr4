@@ -1,18 +1,24 @@
-/// Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+/// 
+/// Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
 /// Use of this file is governed by the BSD 3-clause license that
 /// can be found in the LICENSE.txt file in the project root.
+/// 
 
 
 import Foundation
 
 public class PredictionContext: Hashable, CustomStringConvertible {
-    /// Represents {@code $} in local context prediction, which means wildcard.
-    /// {@code *+x = *}.
+    /// 
+    /// Represents `$` in local context prediction, which means wildcard.
+    /// `+x = *`.
+    /// 
     public static let EMPTY: EmptyPredictionContext = EmptyPredictionContext()
 
-    /// Represents {@code $} in an array in full context mode, when {@code $}
-    /// doesn't mean wildcard: {@code $ + x = [$,x]}. Here,
-    /// {@code $} = {@link #EMPTY_RETURN_STATE}.
+    /// 
+    /// Represents `$` in an array in full context mode, when `$`
+    /// doesn't mean wildcard: `$ + x = [$,x]`. Here,
+    /// `$` = _#EMPTY_RETURN_STATE_.
+    /// 
     public static let EMPTY_RETURN_STATE: Int = Int(Int32.max)
 
     private static let INITIAL_HASH: Int = 1
@@ -24,33 +30,37 @@ public class PredictionContext: Hashable, CustomStringConvertible {
         return oldGlobalNodeCount
     }()
 
-    /// Stores the computed hash code of this {@link org.antlr.v4.runtime.atn.PredictionContext}. The hash
+    /// 
+    /// Stores the computed hash code of this _org.antlr.v4.runtime.atn.PredictionContext_. The hash
     /// code is computed in parts to match the following reference algorithm.
     /// 
-    /// <pre>
+    /// 
     /// private int referenceHashCode() {
-    /// int hash = {@link org.antlr.v4.runtime.misc.MurmurHash#initialize MurmurHash.initialize}({@link #INITIAL_HASH});
+    /// int hash = _org.antlr.v4.runtime.misc.MurmurHash#initialize MurmurHash.initialize_(_#INITIAL_HASH_);
     /// 
-    /// for (int i = 0; i &lt; {@link #size()}; i++) {
-    /// hash = {@link org.antlr.v4.runtime.misc.MurmurHash#update MurmurHash.update}(hash, {@link #getParent getParent}(i));
+    /// for (int i = 0; i &lt; _#size()_; i++) {
+    /// hash = _org.antlr.v4.runtime.misc.MurmurHash#update MurmurHash.update_(hash, _#getParent getParent_(i));
     /// }
     /// 
-    /// for (int i = 0; i &lt; {@link #size()}; i++) {
-    /// hash = {@link org.antlr.v4.runtime.misc.MurmurHash#update MurmurHash.update}(hash, {@link #getReturnState getReturnState}(i));
+    /// for (int i = 0; i &lt; _#size()_; i++) {
+    /// hash = _org.antlr.v4.runtime.misc.MurmurHash#update MurmurHash.update_(hash, _#getReturnState getReturnState_(i));
     /// }
     /// 
-    /// hash = {@link org.antlr.v4.runtime.misc.MurmurHash#finish MurmurHash.finish}(hash, 2 * {@link #size()});
+    /// hash = _org.antlr.v4.runtime.misc.MurmurHash#finish MurmurHash.finish_(hash, 2 * _#size()_);
     /// return hash;
     /// }
-    /// </pre>
+    /// 
+    /// 
     public let cachedHashCode: Int
 
     init(_ cachedHashCode: Int) {
         self.cachedHashCode = cachedHashCode
     }
 
-    /// Convert a {@link org.antlr.v4.runtime.RuleContext} tree to a {@link org.antlr.v4.runtime.atn.PredictionContext} graph.
-    /// Return {@link #EMPTY} if {@code outerContext} is empty or null.
+    /// 
+    /// Convert a _org.antlr.v4.runtime.RuleContext_ tree to a _org.antlr.v4.runtime.atn.PredictionContext_ graph.
+    /// Return _#EMPTY_ if `outerContext` is empty or null.
+    /// 
     public static func fromRuleContext(_ atn: ATN, _ outerContext: RuleContext?) -> PredictionContext {
         var _outerContext: RuleContext
         if let outerContext = outerContext {
@@ -92,7 +102,9 @@ public class PredictionContext: Hashable, CustomStringConvertible {
     }
 
 
-    /// This means only the {@link #EMPTY} context is in set.
+    /// 
+    /// This means only the _#EMPTY_ context is in set.
+    /// 
     public func isEmpty() -> Bool {
         return self === PredictionContext.EMPTY
     }
@@ -179,31 +191,33 @@ public class PredictionContext: Hashable, CustomStringConvertible {
                 rootIsWildcard, &mergeCache)
     }
 
-    /// Merge two {@link org.antlr.v4.runtime.atn.SingletonPredictionContext} instances.
     /// 
-    /// <p>Stack tops equal, parents merge is same; return left graph.<br>
-    /// <embed src="images/SingletonMerge_SameRootSamePar.svg" type="image/svg+xml"/></p>
+    /// Merge two _org.antlr.v4.runtime.atn.SingletonPredictionContext_ instances.
     /// 
-    /// <p>Same stack top, parents differ; merge parents giving array node, then
+    /// Stack tops equal, parents merge is same; return left graph.
+    /// 
+    /// 
+    /// Same stack top, parents differ; merge parents giving array node, then
     /// remainders of those graphs. A new root node is created to point to the
-    /// merged parents.<br>
-    /// <embed src="images/SingletonMerge_SameRootDiffPar.svg" type="image/svg+xml"/></p>
+    /// merged parents.
     /// 
-    /// <p>Different stack tops pointing to same parent. Make array node for the
+    /// 
+    /// Different stack tops pointing to same parent. Make array node for the
     /// root where both element in the root point to the same (original)
-    /// parent.<br>
-    /// <embed src="images/SingletonMerge_DiffRootSamePar.svg" type="image/svg+xml"/></p>
+    /// parent.
     /// 
-    /// <p>Different stack tops pointing to different parents. Make array node for
+    /// 
+    /// Different stack tops pointing to different parents. Make array node for
     /// the root where each element points to the corresponding original
-    /// parent.<br>
-    /// <embed src="images/SingletonMerge_DiffRootDiffPar.svg" type="image/svg+xml"/></p>
+    /// parent.
     /// 
-    /// - parameter a: the first {@link org.antlr.v4.runtime.atn.SingletonPredictionContext}
-    /// - parameter b: the second {@link org.antlr.v4.runtime.atn.SingletonPredictionContext}
-    /// - parameter rootIsWildcard: {@code true} if this is a local-context merge,
+    /// 
+    /// - parameter a: the first _org.antlr.v4.runtime.atn.SingletonPredictionContext_
+    /// - parameter b: the second _org.antlr.v4.runtime.atn.SingletonPredictionContext_
+    /// - parameter rootIsWildcard: `true` if this is a local-context merge,
     /// otherwise false to indicate a full-context merge
     /// - parameter mergeCache:
+    /// 
     public static func mergeSingletons(
         _ a: SingletonPredictionContext,
         _ b: SingletonPredictionContext,
@@ -294,42 +308,44 @@ public class PredictionContext: Hashable, CustomStringConvertible {
             }
     }
 
-    /// Handle case where at least one of {@code a} or {@code b} is
-    /// {@link #EMPTY}. In the following diagrams, the symbol {@code $} is used
-    /// to represent {@link #EMPTY}.
     /// 
-    /// <h2>Local-Context Merges</h2>
+    /// Handle case where at least one of `a` or `b` is
+    /// _#EMPTY_. In the following diagrams, the symbol `$` is used
+    /// to represent _#EMPTY_.
     /// 
-    /// <p>These local-context merge operations are used when {@code rootIsWildcard}
-    /// is true.</p>
+    /// Local-Context Merges
     /// 
-    /// <p>{@link #EMPTY} is superset of any graph; return {@link #EMPTY}.<br>
-    /// <embed src="images/LocalMerge_EmptyRoot.svg" type="image/svg+xml"/></p>
+    /// These local-context merge operations are used when `rootIsWildcard`
+    /// is true.
     /// 
-    /// <p>{@link #EMPTY} and anything is {@code #EMPTY}, so merged parent is
-    /// {@code #EMPTY}; return left graph.<br>
-    /// <embed src="images/LocalMerge_EmptyParent.svg" type="image/svg+xml"/></p>
+    /// _#EMPTY_ is superset of any graph; return _#EMPTY_.
     /// 
-    /// <p>Special case of last merge if local context.<br>
-    /// <embed src="images/LocalMerge_DiffRoots.svg" type="image/svg+xml"/></p>
     /// 
-    /// <h2>Full-Context Merges</h2>
+    /// _#EMPTY_ and anything is `#EMPTY`, so merged parent is
+    /// `#EMPTY`; return left graph.
     /// 
-    /// <p>These full-context merge operations are used when {@code rootIsWildcard}
-    /// is false.</p>
     /// 
-    /// <p><embed src="images/FullMerge_EmptyRoots.svg" type="image/svg+xml"/></p>
+    /// Special case of last merge if local context.
     /// 
-    /// <p>Must keep all contexts; {@link #EMPTY} in array is a special value (and
-    /// null parent).<br>
-    /// <embed src="images/FullMerge_EmptyRoot.svg" type="image/svg+xml"/></p>
     /// 
-    /// <p><embed src="images/FullMerge_SameRoot.svg" type="image/svg+xml"/></p>
+    /// Full-Context Merges
     /// 
-    /// - parameter a: the first {@link org.antlr.v4.runtime.atn.SingletonPredictionContext}
-    /// - parameter b: the second {@link org.antlr.v4.runtime.atn.SingletonPredictionContext}
-    /// - parameter rootIsWildcard: {@code true} if this is a local-context merge,
+    /// These full-context merge operations are used when `rootIsWildcard`
+    /// is false.
+    /// 
+    /// 
+    /// 
+    /// Must keep all contexts; _#EMPTY_ in array is a special value (and
+    /// null parent).
+    /// 
+    /// 
+    /// 
+    /// 
+    /// - parameter a: the first _org.antlr.v4.runtime.atn.SingletonPredictionContext_
+    /// - parameter b: the second _org.antlr.v4.runtime.atn.SingletonPredictionContext_
+    /// - parameter rootIsWildcard: `true` if this is a local-context merge,
     /// otherwise false to indicate a full-context merge
+    /// 
     public static func mergeRoot(_ a: SingletonPredictionContext,
         _ b: SingletonPredictionContext,
         _ rootIsWildcard: Bool) -> PredictionContext? {
@@ -364,23 +380,25 @@ public class PredictionContext: Hashable, CustomStringConvertible {
             return nil
     }
 
-    /// Merge two {@link org.antlr.v4.runtime.atn.ArrayPredictionContext} instances.
     /// 
-    /// <p>Different tops, different parents.<br>
-    /// <embed src="images/ArrayMerge_DiffTopDiffPar.svg" type="image/svg+xml"/></p>
+    /// Merge two _org.antlr.v4.runtime.atn.ArrayPredictionContext_ instances.
     /// 
-    /// <p>Shared top, same parents.<br>
-    /// <embed src="images/ArrayMerge_ShareTopSamePar.svg" type="image/svg+xml"/></p>
+    /// Different tops, different parents.
     /// 
-    /// <p>Shared top, different parents.<br>
-    /// <embed src="images/ArrayMerge_ShareTopDiffPar.svg" type="image/svg+xml"/></p>
     /// 
-    /// <p>Shared top, all shared parents.<br>
-    /// <embed src="images/ArrayMerge_ShareTopSharePar.svg" type="image/svg+xml"/></p>
+    /// Shared top, same parents.
     /// 
-    /// <p>Equal tops, merge parents and reduce top to
-    /// {@link org.antlr.v4.runtime.atn.SingletonPredictionContext}.<br>
-    /// <embed src="images/ArrayMerge_EqualTop.svg" type="image/svg+xml"/></p>
+    /// 
+    /// Shared top, different parents.
+    /// 
+    /// 
+    /// Shared top, all shared parents.
+    /// 
+    /// 
+    /// Equal tops, merge parents and reduce top to
+    /// _org.antlr.v4.runtime.atn.SingletonPredictionContext_.
+    /// 
+    /// 
     public static func mergeArrays(
         _ a: ArrayPredictionContext,
         _ b: ArrayPredictionContext,
@@ -522,29 +540,6 @@ public class PredictionContext: Hashable, CustomStringConvertible {
             // print("merge array 4 \(M)")
             return M
     }
-
-    /// Make pass over all <em>M</em> {@code parents}; merge any {@code equals()}
-    /// ones.
-//    internal static func combineCommonParents(inout parents: [PredictionContext?]) {
-//        var uniqueParents: Dictionary<PredictionContext, PredictionContext> =
-//        Dictionary<PredictionContext, PredictionContext>()
-//        let length = parents.count
-//        for p in 0..<length {
-//            if let parent: PredictionContext = parents[p] {
-//                // if !uniqueParents.keys.contains(parent) {
-//                if uniqueParents[parent] == nil {
-//                    uniqueParents[parent] = parent  // don't replace
-//                }
-//            }
-//        }
-//
-//        for p in 0..<length {
-//            if let parent: PredictionContext = parents[p] {
-//                parents[p] = uniqueParents[parent]
-//            }
-//        }
-//
-//    }
 
     public static func toDOTString(_ context: PredictionContext?) -> String {
         if (context == nil) {

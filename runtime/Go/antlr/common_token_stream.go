@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+// Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
 // Use of this file is governed by the BSD 3-clause license that
 // can be found in the LICENSE.txt file in the project root.
 
@@ -337,8 +337,8 @@ func (c *CommonTokenStream) GetTextFromInterval(interval *Interval) string {
 		interval = NewInterval(0, len(c.tokens)-1)
 	}
 
-	start := interval.start
-	stop := interval.stop
+	start := interval.Start
+	stop := interval.Stop
 
 	if start < 0 || stop < 0 {
 		return ""

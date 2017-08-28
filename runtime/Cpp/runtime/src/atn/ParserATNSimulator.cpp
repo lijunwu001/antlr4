@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -107,6 +107,8 @@ size_t ParserATNSimulator::adaptivePredict(TokenStream *input, size_t decision, 
     bool fullCtx = false;
     std::unique_ptr<ATNConfigSet> s0_closure = computeStartState(dynamic_cast<ATNState *>(dfa.atnStartState),
                                                                  &ParserRuleContext::EMPTY, fullCtx);
+
+    _stateLock.writeLock();
     if (dfa.isPrecedenceDfa()) {
       /* If this is a precedence DFA, we use applyPrecedenceFilter
        * to convert the computed start state to a precedence start
@@ -124,11 +126,14 @@ size_t ParserATNSimulator::adaptivePredict(TokenStream *input, size_t decision, 
     } else {
       dfa::DFAState *newState = new dfa::DFAState(std::move(s0_closure)); /* mem-check: managed by the DFA or deleted below */
       s0 = addDFAState(dfa, newState);
+
+      delete dfa.s0; // Delete existing s0 DFA state, if there's any. 
       dfa.s0 = s0;
       if (s0 != newState) {
         delete newState; // If there was already a state with this config set we don't need the new one.
       }
     }
+    _stateLock.writeUnlock();
   }
 
   // We can start with an existing DFA.
@@ -179,7 +184,7 @@ size_t ParserATNSimulator::execATN(dfa::DFA &dfa, dfa::DFAState *s0, TokenStream
       throw e;
     }
 
-    if (D->requiresFullContext && mode != PredictionMode::SLL) {
+    if (D->requiresFullContext && _mode != PredictionMode::SLL) {
       // IF PREDS, MIGHT RESOLVE TO SINGLE ALT => SLL (or syntax error)
       BitSet conflictingAlts;
       if (D->predicates.size() != 0) {
@@ -278,7 +283,7 @@ dfa::DFAState *ParserATNSimulator::computeTargetState(dfa::DFA &dfa, dfa::DFASta
     D->isAcceptState = true;
     D->configs->uniqueAlt = predictedAlt;
     D->prediction = predictedAlt;
-  } else if (PredictionModeClass::hasSLLConflictTerminatingPrediction(mode, D->configs.get())) {
+  } else if (PredictionModeClass::hasSLLConflictTerminatingPrediction(_mode, D->configs.get())) {
     // MORE THAN ONE VIABLE ALTERNATIVE
     D->configs->conflictingAlts = getConflictingAlts(D->configs.get());
     D->requiresFullContext = true;
@@ -354,6 +359,9 @@ size_t ParserATNSimulator::execATNWithFullContext(dfa::DFA &dfa, dfa::DFAState *
       }
       throw e;
     }
+    if (previous != s0) // Don't delete the start set.
+        delete previous;
+    previous = nullptr;
 
     std::vector<BitSet> altSubSets = PredictionModeClass::getConflictingAltSubsets(reach.get());
     reach->uniqueAlt = getUniqueAlt(reach.get());
@@ -362,7 +370,7 @@ size_t ParserATNSimulator::execATNWithFullContext(dfa::DFA &dfa, dfa::DFAState *
       predictedAlt = reach->uniqueAlt;
       break;
     }
-    if (mode != PredictionMode::LL_EXACT_AMBIG_DETECTION) {
+    if (_mode != PredictionMode::LL_EXACT_AMBIG_DETECTION) {
       predictedAlt = PredictionModeClass::resolvesToJustOneViableAlt(altSubSets);
       if (predictedAlt != ATN::INVALID_ALT_NUMBER) {
         break;
@@ -379,9 +387,6 @@ size_t ParserATNSimulator::execATNWithFullContext(dfa::DFA &dfa, dfa::DFAState *
       // we're not sure what the ambiguity is yet.
       // So, keep going.
     }
-
-    if (previous != s0) // Don't delete the start set.
-      delete previous;
     previous = reach.release();
 
     if (t != Token::EOF) {
@@ -507,7 +512,7 @@ std::unique_ptr<ATNConfigSet> ParserATNSimulator::computeReachSet(ATNConfigSet *
     }
   }
 
-  if (t == Token::EOF) {
+  if (t == IntStream::EOF) {
     /* After consuming EOF no additional input is possible, so we are
      * only interested in configurations which reached the end of the
      * decision rule (local context) or end of the start rule (full
@@ -525,7 +530,7 @@ std::unique_ptr<ATNConfigSet> ParserATNSimulator::computeReachSet(ATNConfigSet *
      * already guaranteed to meet this condition whether or not it's
      * required.
      */
-    ATNConfigSet * temp = removeAllConfigsNotInRuleStopState(reach.get(), reach == intermediate);
+    ATNConfigSet *temp = removeAllConfigsNotInRuleStopState(reach.get(), *reach == *intermediate);
     if (temp != reach.get())
       reach.reset(temp); // We got a new set, so use that.
   }
@@ -951,7 +956,7 @@ bool ParserATNSimulator::canDropLoopEntryEdgeInLeftRecursiveRule(ATNConfig *conf
   // left-recursion elimination. For efficiency, also check if
   // the context has an empty stack case. If so, it would mean
   // global FOLLOW so we can't perform optimization
-  if ( p->getStateType() != ATNState::STAR_LOOP_ENTRY ||
+  if (p->getStateType() != ATNState::STAR_LOOP_ENTRY ||
       !((StarLoopEntryState *)p)->isPrecedenceDecision || // Are we the special loop entry/exit state?
       config->context->isEmpty() ||                      // If SLL wildcard
       config->context->hasEmptyPath())
@@ -1239,7 +1244,9 @@ dfa::DFAState *ParserATNSimulator::addDFAEdge(dfa::DFA &dfa, dfa::DFAState *from
     return nullptr;
   }
 
+  _stateLock.writeLock();
   to = addDFAState(dfa, to); // used existing if possible not incoming
+  _stateLock.writeUnlock();
   if (from == nullptr || t > (int)atn.maxTokenType) {
     return to;
   }
@@ -1268,11 +1275,8 @@ dfa::DFAState *ParserATNSimulator::addDFAState(dfa::DFA &dfa, dfa::DFAState *D) 
     return D;
   }
 
-  _stateLock.writeLock();
-
   auto existing = dfa.states.find(D);
   if (existing != dfa.states.end()) {
-    _stateLock.writeUnlock();
     return *existing;
   }
 
@@ -1281,9 +1285,8 @@ dfa::DFAState *ParserATNSimulator::addDFAState(dfa::DFA &dfa, dfa::DFAState *D) 
     D->configs->optimizeConfigs(this);
     D->configs->setReadonly(true);
   }
-  
+
   dfa.states.insert(D);
-  _stateLock.writeUnlock();
 
 #if DEBUG_DFA == 1
   std::cout << "adding new DFA state: " << D << std::endl;
@@ -1329,11 +1332,11 @@ void ParserATNSimulator::reportAmbiguity(dfa::DFA &dfa, dfa::DFAState * /*D*/, s
 }
 
 void ParserATNSimulator::setPredictionMode(PredictionMode newMode) {
-  mode = newMode;
+  _mode = newMode;
 }
 
 atn::PredictionMode ParserATNSimulator::getPredictionMode() {
-  return mode;
+  return _mode;
 }
 
 Parser* ParserATNSimulator::getParser() {
@@ -1349,6 +1352,6 @@ bool ParserATNSimulator::getLrLoopSetting() {
 }
 
 void ParserATNSimulator::InitializeInstanceFields() {
-  mode = PredictionMode::LL;
+  _mode = PredictionMode::LL;
   _startIndex = 0;
 }

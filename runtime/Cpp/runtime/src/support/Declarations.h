@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -6,16 +6,6 @@
 #pragma once
 
 namespace antlr4 {
-  class IllegalStateException;
-  class IllegalArgumentException;
-  class NoSuchElementException;
-  class NullPointerException;
-  class InputMismatchException;
-  class ParseCancellationException;
-  class InputMismatchException;
-  class EmptyStackException;
-  class LexerNoViableAltException;
-
   class ANTLRErrorListener;
   class ANTLRErrorStrategy;
   class ANTLRFileStream;
@@ -30,16 +20,21 @@ namespace antlr4 {
   class ConsoleErrorListener;
   class DefaultErrorStrategy;
   class DiagnosticErrorListener;
+  class EmptyStackException;
   class FailedPredicateException;
+  class IllegalArgumentException;
+  class IllegalStateException;
   class InputMismatchException;
   class IntStream;
   class InterpreterRuleContext;
-  class IRecognizer;
   class Lexer;
   class LexerInterpreter;
   class LexerNoViableAltException;
   class ListTokenSource;
+  class NoSuchElementException;
   class NoViableAltException;
+  class NullPointerException;
+  class ParseCancellationException;
   class Parser;
   class ParserInterpreter;
   class ParserRuleContext;
@@ -60,7 +55,6 @@ namespace antlr4 {
     class Interval;
     class IntervalSet;
     class MurmurHash;
-    class ParseCancellationException;
     class Utils;
     class Predicate;
   }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -169,13 +169,15 @@ namespace Antlr4.Runtime
         private int _syntaxErrors;
 
         protected readonly TextWriter Output;
+        protected readonly TextWriter ErrorOutput;
 
-        public Parser(ITokenStream input) : this(input, Console.Out) { }
+        public Parser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
 
-        public Parser(ITokenStream input, TextWriter output)
+        public Parser(ITokenStream input, TextWriter output, TextWriter errorOutput)
         {
             TokenStream = input;
             Output = output;
+            ErrorOutput = errorOutput;
         }
 
         /// <summary>reset the parser's state</summary>
@@ -688,7 +690,7 @@ namespace Antlr4.Runtime
                 charPositionInLine = offendingToken.Column;
             }
             IAntlrErrorListener<IToken> listener = ((IParserErrorListener)ErrorListenerDispatch);
-            listener.SyntaxError(this, offendingToken, line, charPositionInLine, msg, e);
+            listener.SyntaxError(ErrorOutput, this, offendingToken, line, charPositionInLine, msg, e);
         }
 
         /// <summary>

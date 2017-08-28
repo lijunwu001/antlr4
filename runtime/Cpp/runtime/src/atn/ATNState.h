@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -77,7 +77,7 @@ namespace atn {
     virtual ~ATNState();
 
     static const size_t INITIAL_NUM_TRANSITIONS = 4;
-    static const size_t INVALID_STATE_NUMBER = (size_t)-1;
+    static const size_t INVALID_STATE_NUMBER = static_cast<size_t>(-1); // std::numeric_limits<size_t>::max();
 
     enum {
       ATN_INVALID_TYPE = 0,

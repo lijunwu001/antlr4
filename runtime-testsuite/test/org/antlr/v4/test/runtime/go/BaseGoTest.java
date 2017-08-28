@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+ * Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -215,7 +214,8 @@ public class BaseGoTest implements RuntimeTestSupport {
 			ParserATNFactory f;
 			if (g.isLexer()) {
 				f = new LexerATNFactory((LexerGrammar) g);
-			} else {
+			}
+			else {
 				f = new ParserATNFactory(g);
 			}
 
@@ -286,7 +286,8 @@ public class BaseGoTest implements RuntimeTestSupport {
 			ttype = interp.match(input, Lexer.DEFAULT_MODE);
 			if (ttype == Token.EOF) {
 				tokenTypes.add("EOF");
-			} else {
+			}
+			else {
 				tokenTypes.add(lg.typeToTokenList.get(ttype));
 			}
 
@@ -369,7 +370,8 @@ public class BaseGoTest implements RuntimeTestSupport {
 		this.stderrDuringParse = null;
 		if (parserName == null) {
 			writeLexerTestFile(lexerName, false);
-		} else {
+		}
+		else {
 			writeParserTestFile(parserName, lexerName, listenerName,
 			                    visitorName, parserStartRuleName, debug);
 		}
@@ -672,6 +674,7 @@ public class BaseGoTest implements RuntimeTestSupport {
 				"import (\n"
 				+"	\"github.com/antlr/antlr4/runtime/Go/antlr\"\n"
 				+"	\"./parser\"\n"
+				+"	\"fmt\"\n"
 				+"	\"os\"\n"
 				+")\n"
 				+ "\n"
@@ -694,7 +697,11 @@ public class BaseGoTest implements RuntimeTestSupport {
 				+ "}\n"
 				+ "\n"
 				+ "func main() {\n"
-				+ "	input := antlr.NewFileStream(os.Args[1])\n"
+				+ "	input, err := antlr.NewFileStream(os.Args[1])\n"
+				+ "     if err != nil {\n"
+				+ "     	fmt.Printf(\"Failed to find file: %v\", err)\n"
+				+ "     	return\n"
+				+ "     }\n"
 				+ "	lexer := parser.New<lexerName>(input)\n"
 				+ "	stream := antlr.NewCommonTokenStream(lexer,0)\n"
 				+ "<createParser>"
@@ -732,7 +739,11 @@ public class BaseGoTest implements RuntimeTestSupport {
 				+ ")\n"
 				+ "\n"
 				+ "func main() {\n"
-				+ "	input := antlr.NewFileStream(os.Args[1])\n"
+				+ "	input, err := antlr.NewFileStream(os.Args[1])\n"
+				+ "     if err != nil {\n"
+				+ "     	fmt.Printf(\"Failed to find file: %v\", err)\n"
+				+ "     	return\n"
+				+ "     }\n"
 				+ "	lexer := parser.New<lexerName>(input)\n"
 				+ "	stream := antlr.NewCommonTokenStream(lexer,0)\n"
 				+ "	stream.Fill()\n"
@@ -752,7 +763,8 @@ public class BaseGoTest implements RuntimeTestSupport {
 	                            String parserStartRuleName, boolean debug) {
 		if (parserName == null) {
 			writeLexerTestFile(lexerName, debug);
-		} else {
+		}
+		else {
 			writeParserTestFile(parserName, lexerName, listenerName,
 			                    visitorName, parserStartRuleName, debug);
 		}
@@ -776,7 +788,8 @@ public class BaseGoTest implements RuntimeTestSupport {
 			for (File file : files) {
 				if (file.isDirectory()) {
 					eraseDirectory(file);
-				} else {
+				}
+				else {
 					file.delete();
 				}
 			}

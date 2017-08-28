@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -164,7 +164,7 @@ namespace antlr4 {
 
       RewriteOperation(TokenStreamRewriter *outerInstance, size_t index);
       RewriteOperation(TokenStreamRewriter *outerInstance, size_t index, const std::string& text);
-      virtual ~RewriteOperation() {};
+      virtual ~RewriteOperation();
 
       /// Execute the rewrite operation by possibly adding to the buffer.
       /// Return the index of the next token to operate on.
@@ -267,7 +267,7 @@ namespace antlr4 {
     ///
     ///  Return a map from token index to operation.
     /// </summary>
-    virtual std::unordered_map<size_t, RewriteOperation*> reduceToSingleOperationPerIndex(std::vector<RewriteOperation*> rewrites);
+    virtual std::unordered_map<size_t, RewriteOperation*> reduceToSingleOperationPerIndex(std::vector<RewriteOperation*> &rewrites);
 
     virtual std::string catOpText(std::string *a, std::string *b);
 

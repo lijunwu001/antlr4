@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+ * Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -45,7 +45,6 @@ import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupString;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,7 +146,8 @@ public class BaseNodeTest implements RuntimeTestSupport {
 			ParserATNFactory f;
 			if (g.isLexer()) {
 				f = new LexerATNFactory((LexerGrammar) g);
-			} else {
+			}
+			else {
 				f = new ParserATNFactory(g);
 			}
 
@@ -218,7 +218,8 @@ public class BaseNodeTest implements RuntimeTestSupport {
 			ttype = interp.match(input, Lexer.DEFAULT_MODE);
 			if (ttype == Token.EOF) {
 				tokenTypes.add("EOF");
-			} else {
+			}
+			else {
 				tokenTypes.add(lg.typeToTokenList.get(ttype));
 			}
 
@@ -310,7 +311,8 @@ public class BaseNodeTest implements RuntimeTestSupport {
 		this.stderrDuringParse = null;
 		if (parserName == null) {
 			writeLexerTestFile(lexerName, false);
-		} else {
+		}
+		else {
 			writeParserTestFile(parserName, lexerName, listenerName,
 					visitorName, parserStartRuleName, debug);
 		}
@@ -643,7 +645,7 @@ public class BaseNodeTest implements RuntimeTestSupport {
 						+ "};\n"
 						+ "\n"
 						+ "function main(argv) {\n"
-						+ "    var input = new antlr4.FileStream(argv[2]);\n"
+						+ "    var input = new antlr4.FileStream(argv[2], true);\n"
 						+ "    var lexer = new <lexerName>.<lexerName>(input);\n"
 						+ "    var stream = new antlr4.CommonTokenStream(lexer);\n"
 						+ "<createParser>"
@@ -679,7 +681,7 @@ public class BaseNodeTest implements RuntimeTestSupport {
 						+ "var <lexerName> = require('./<lexerName>');\n"
 						+ "\n"
 						+ "function main(argv) {\n"
-						+ "    var input = new antlr4.FileStream(argv[2]);\n"
+						+ "    var input = new antlr4.FileStream(argv[2], true);\n"
 						+ "    var lexer = new <lexerName>.<lexerName>(input);\n"
 						+ "    var stream = new antlr4.CommonTokenStream(lexer);\n"
 						+ "    stream.fill();\n"
@@ -698,7 +700,8 @@ public class BaseNodeTest implements RuntimeTestSupport {
 			String parserStartRuleName, boolean debug) {
 		if (parserName == null) {
 			writeLexerTestFile(lexerName, debug);
-		} else {
+		}
+		else {
 			writeParserTestFile(parserName, lexerName, listenerName,
 					visitorName, parserStartRuleName, debug);
 		}

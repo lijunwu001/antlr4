@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2012-2016 The ANTLR Project. All rights reserved.
+﻿/* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
  * Use of this file is governed by the BSD 3-clause license that
  * can be found in the LICENSE.txt file in the project root.
  */
@@ -7,31 +7,25 @@
 
 using namespace antlr4::misc;
 
+Interval::~Interval() = default;
 
 size_t antlr4::misc::numericToSymbol(ssize_t v) {
-  return (size_t)v;
+  return static_cast<size_t>(v);
 }
 
 ssize_t antlr4::misc::symbolToNumeric(size_t v) {
-  return (ssize_t)v;
+  return static_cast<ssize_t>(v);
 }
 
 Interval const Interval::INVALID;
 
-Interval::Interval() : Interval((ssize_t)-1, -2) { // Need an explicit cast here for VS.
+Interval::Interval() : Interval(static_cast<ssize_t>(-1), -2) { // Need an explicit cast here for VS.
 }
 
 Interval::Interval(size_t a_, size_t b_) : Interval(symbolToNumeric(a_), symbolToNumeric(b_)) {
 }
 
-Interval::Interval(ssize_t a_, ssize_t b_, bool autoExtend) {
-  a = a_;
-  b = b_;
-
-  // XXX: temporary hack to make the full Unicode range available.
-  if (autoExtend && b == 0xFFFF) {
-    b = 0x10FFFF;
-  }
+Interval::Interval(ssize_t a_, ssize_t b_) : a(a_), b(b_) {
 }
 
 size_t Interval::length() const {
@@ -47,8 +41,8 @@ bool Interval::operator == (const Interval &other) const {
 
 size_t Interval::hashCode() const {
   size_t hash = 23;
-  hash = hash * 31 + (size_t)a;
-  hash = hash * 31 + (size_t)b;
+  hash = hash * 31 + static_cast<size_t>(a);
+  hash = hash * 31 + static_cast<size_t>(b);
   return hash;
 }
 
